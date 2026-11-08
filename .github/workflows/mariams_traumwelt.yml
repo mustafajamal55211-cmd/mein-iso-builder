@@ -1,6 +1,7 @@
 name: OpenFactory Cloud Engine - Mariams Traumwelt Extreme
 
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [start_iso_build]
 
@@ -30,14 +31,12 @@ jobs:
             mkdir -p /tmp/archiso-profile/airootfs/etc/skel/.config/
             mkdir -p /tmp/archiso-profile/airootfs/usr/local/bin/
             
-            # Fehlerfreie Bildprüfung und Einbindung
-            if [ -f /workspace/1794148330326[1].png ]; then
-              cp /workspace/1794148330326[1].png /tmp/archiso-profile/airootfs/usr/share/backgrounds/traumwelt.png
+            if [ -f /workspace/1794148330326.png ]; then
+              cp /workspace/1794148330326.png /tmp/archiso-profile/airootfs/usr/share/backgrounds/traumwelt.png
             elif [ -f /workspace/1794148330326.png ]; then
               cp /workspace/1794148330326.png /tmp/archiso-profile/airootfs/usr/share/backgrounds/traumwelt.png
             fi
             
-            # Die 24-Stunden-Geschenk-Funktion
             echo -e '#!/bin/bash\nif [ ! -f ~/.last_gift ] || [ \$((\$(date +%s) - \$(cat ~/.last_gift))) -gt 86400 ]; then\n  zenity --info --title=\"Mamis Ueberraschung\" --text=\"Guten Morgen Mama! Hier ist deine heutige Ueberraschung: Du bist die beste Mama der Welt! ❤️\" --width=400\n  date +%s > ~/.last_gift\nelse\n  zenity --info --title=\"Warten...\" --text=\"Deine nächste Ueberraschung lädt noch... Bitte warte die 24 Stunden ab! ✨\" --width=400\nfi' > /tmp/archiso-profile/airootfs/usr/local/bin/open_gift.sh
             chmod +x /tmp/archiso-profile/airootfs/usr/local/bin/open_gift.sh
             
