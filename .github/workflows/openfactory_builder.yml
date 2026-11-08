@@ -1,0 +1,41 @@
+name: OpenFactory Cloud Engine
+
+on:
+  repository_dispatch:
+    types: [start_iso_build]
+
+jobs:
+  build_iso:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+
+      - name: Build ISO inside Fail-Safe Docker Container
+        run: |
+          docker run --privileged -v ${{ github.workspace }}:/workspace archlinux:latest /bin/bash -c "
+            set -e
+            echo 'Server = https://kernel.org\$repo/os/\$arch' > /etc/pacman.d/mirrorlist
+            pacman -Syy
+            pacman -Syu --noconfirm archiso squashfs-tools
+            cp -r /usr/share/archiso/configs/releng /tmp/archiso-profile
+            if [ -f /workspace/requested_packages.txt ]; then
+              sed -i '/^$/d' /workspace/requested_packages.txt
+              cat /workspace/requested_packages.txt >> /tmp/archiso-profile/packages.x86_64
+            fi
+            mkdir -p /workspace/output
+            mkarchiso -v -w /tmp/archiso-workspace -o /workspace/output /tmp/archiso-profile
+          "
+
+      - name: Upload Finished ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenFactory-Generated-ISO
+          path: output/*.iso
+          retention-days: 1
